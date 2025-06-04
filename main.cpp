@@ -90,7 +90,7 @@ void print(Node* head, int depth) {
 }
 
 //what is called after the number wanted to delete is found
-void del(Node* head, int in) {
+void del(Node* head, int in, Node*& root) {
   //when there is no children
   if (head->right == NULL && head->left == NULL && head->value == in) {
     if (head->parent->right == head) {
@@ -104,7 +104,7 @@ void del(Node* head, int in) {
   }
 
   //A right child only
-  else if (head->right != NULL && head->left == NULL) {
+  else if (head->right != NULL && head->left == NULL && head != root) {
     if (head->parent->right == head) {
       head->parent->right = head->right;
       head->right->parent = head->parent;
@@ -117,8 +117,16 @@ void del(Node* head, int in) {
     }
   }
 
+  //A right child only of the root
+  else if (head->right != NULL && head->left == NULL && head == root) {
+    root = head->right;
+    head->right = NULL;
+    root->parent = NULL;
+    head = root;
+  }
+
   //A left child only
-  else if (head->left != NULL && head->right == NULL) {
+  else if (head->left != NULL && head->right == NULL && head != root) {
     if (head->parent->right == head) {
       head->parent->right = head->left;
       head->left->parent = head->parent;
@@ -132,6 +140,14 @@ void del(Node* head, int in) {
 
   }
 
+  //A left child only of the root
+  else if (head->left != NULL && head->right == NULL && head == root) {
+    root = head->left;
+    head->right = NULL;
+    root->parent = NULL;
+    head = root;
+  }
+
   //Two children
   else if (head->right != NULL && head->left != NULL) {
     Node* temp = head->right;
@@ -139,21 +155,21 @@ void del(Node* head, int in) {
       temp = temp->left;
     }
     head->value = temp->value;
-    del(temp, temp->value);
+    del(temp, temp->value, root);
   }
 }
 
 //To locate a node before deleting it
-void find(Node* head, int in){
+void find(Node* head, int in, Node*& root){
    if (in >= head->value) {
 
       if (head->right != NULL && head->value != in) {
         head = head->right;
-        find(head, in);
+        find(head, in, root);
       }
       
       else if (head->value == in) {
-        del(head, in);
+        del(head, in, root);
       }
 
       else if (head->right == NULL) {
@@ -165,11 +181,11 @@ void find(Node* head, int in){
 
       if (head->left != NULL && head->value != in) {
         head = head->left;
-        find(head, in);
+        find(head, in, root);
       }
 
       else if (head->value == in) {
-	del(head, in);
+	del(head, in, root);
       }
       
       else if (head->left == NULL) {
@@ -228,7 +244,7 @@ int main() {
     else if (input[0] == 'D') {
       cout << "What number do you want to delete from the tree?" << endl;
       cin >> in;
-      find(head, in);
+      find(head, in, root);
       cout << "DONE!" << endl;
       head = root;
     }
